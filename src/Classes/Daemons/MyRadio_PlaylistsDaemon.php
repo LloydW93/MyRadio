@@ -51,6 +51,7 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
 
     private static function updateMostPlayedPlaylist()
     {
+        dlog('Updating Most Played...');
         $pobj = iTones_Playlist::getInstance('semantic-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
 
@@ -89,7 +90,6 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
             $track = MyRadio_Track::getInstance($key);
             //Ask last.fm for similar songs that are in our library
             $similar = $track->getSimilar();
-            dlog('Found ' . sizeof($similar) . ' similar tracks for ' . $track->getID(), 4);
             //Add these to the playlist, along with the popular track
             $playlist[] = $track;
             $playlist = array_merge($playlist, $similar);
@@ -97,7 +97,7 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
         //Actually update the playlist
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
-
+        dlog('Found ' . sizeof($playlist) . ' tracks');
 
         //Aaaand repeat
         $pobj = iTones_Playlist::getInstance('semantic-spec');
@@ -106,6 +106,7 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
         /**
          * Specialist Track play stats for last 14 days
          */
+        dlog("Updating Most Played (Specialist)...");
         $most_played = [];
         for ($i = 0; $i < 14; $i++) {
             $j = $i + 1;
@@ -133,17 +134,18 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
             }
             $track = MyRadio_Track::getInstance($key);
             $similar = $track->getSimilar();
-            dlog('Found ' . sizeof($similar) . ' similar tracks for ' . $track->getID(), 4);
             $playlist[] = $track;
             $playlist = array_merge($playlist, $similar);
         }
 
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
+        dlog('Found ' . sizeof($playlist) . ' tracks');
     }
 
     private static function updateNewestUploadsPlaylist()
     {
+        dlog('Updating Newest Uploads...');
         $pobj = iTones_Playlist::getInstance('newest-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
 
@@ -151,11 +153,13 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
 
         $pobj->setTracks($newest_tracks, $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
+        dlog('Found ' . sizeof($newest_tracks) . ' tracks');
     }
 
 
     private static function updateRandomTracksPlaylist()
     {
+        dlog('Updating Random Tracks...');
         $pobj = iTones_Playlist::getInstance('random-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
 
@@ -163,10 +167,12 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
 
         $pobj->setTracks($random_tracks, $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
+        dlog('Found ' . sizeof($random_tracks) . ' tracks');
     }
     
     private static function updateLastFMGroupPlaylist()
     {
+        dlog('Updating Most Played (Last.fm Group)...');
         $pobj = iTones_Playlist::getInstance('lastgroup-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
         
@@ -207,18 +213,18 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
             }
             $track = MyRadio_Track::getInstance($key);
             $similar = $track->getSimilar();
-            dlog('Found ' . sizeof($similar) . ' similar tracks for ' . $track->getID(), 4);
             $playlist[] = $track;
             $playlist = array_merge($playlist, $similar);
         }
         
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
-        
+        dlog('Found ' . sizeof($playlist) . ' tracks');
     }
     
     private static function updateLastFMGeoPlaylist()
     {
+        dlog('Updating Most Played (Country)...');
         $pobj = iTones_Playlist::getInstance('lastgeo-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
         
@@ -246,18 +252,18 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
                 );
                 if (!empty($c)) {
                     $playlist[] = $c[0]->getID();
-                    dlog('Found ' . $track->getID(), 4);
                 }
             }
         }
         
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
-        
+        dlog('Found ' . sizeof($playlist) . ' tracks');
     }
     
     private static function updateLastFMTopPlaylist()
     {
+        dlog('Updating Most Played (Global)...');
         $pobj = iTones_Playlist::getInstance('lasttop-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
         
@@ -284,18 +290,18 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
                 );
                 if (!empty($c)) {
                     $playlist[] = $c[0]->getID();
-                    dlog('Found ' . $track->getID(), 4);
                 }
             }
         }
         
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
-        
+        dlog('Found ' . sizeof($playlist) . ' tracks');
     }
     
     private static function updateLastFMHypePlaylist()
     {
+        dlog('Updating Hyped...');
         $pobj = iTones_Playlist::getInstance('lasthype-auto');
         $lockstr = $pobj->acquireOrRenewLock(null, MyRadio_User::getInstance(Config::$system_user));
         
@@ -322,14 +328,13 @@ class MyRadio_PlaylistsDaemon extends \MyRadio\MyRadio\MyRadio_Daemon
                 );
                 if (!empty($c)) {
                     $playlist[] = $c[0]->getID();
-                    dlog('Found ' . $track->getID(), 4);
                 }
             }
         }
         
         $pobj->setTracks(array_unique($playlist), $lockstr, null, MyRadio_User::getInstance(Config::$system_user));
         $pobj->releaseLock($lockstr);
-        
+        dlog('Found ' . sizeof($playlist) . ' tracks');
     }
     
 }
