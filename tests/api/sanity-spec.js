@@ -27,13 +27,13 @@ frisby.create('Get public config')
   .get('http://localhost/api/v2/config/publicconfig?api_key=travis-test-key')
   .expectStatus(200)
   .expectHeaderContains('content-type', 'application/json')
-  .expectJSON('0', {
+  .expectJSON({
     status: 'OK',
     'payload': {
       'short_name': 'URN'
     }
   })
-  .expectJSONTypes('0', {
+  .expectJSONTypes({
     id_str: String,
     retweeted: Boolean,
     in_reply_to_screen_name: function(val) { expect(val).toBeTypeOrNull(String); }, // Custom matcher callback
