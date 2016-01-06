@@ -23,16 +23,14 @@ frisby.create('Get Brightbit Twitter feed')
   })
 .toss();
 
-frisby.create('Get /api home')
-  .get('http://localhost')
+frisby.create('Get public config')
+  .get('http://localhost/api/v2/config/publicconfig?api_key=travis-test-key')
   .expectStatus(200)
   .expectHeaderContains('content-type', 'application/json')
   .expectJSON('0', {
-    place: function(val) { expect(val).toMatchOrBeNull("Oklahoma City, OK"); }, // Custom matcher callback
-    user: {
-      verified: false,
-      location: "Oklahoma City, OK",
-      url: "http://brightb.it"
+    status: 'OK',
+    'payload': {
+      'short_name': 'URN'
     }
   })
   .expectJSONTypes('0', {
