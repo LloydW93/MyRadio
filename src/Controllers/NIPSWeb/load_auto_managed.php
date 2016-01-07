@@ -1,14 +1,12 @@
 <?php
 /**
- * Loads a NIPSWeb Auto playlist
- * 
- * @author Andy Durant <lpw@ury.org.uk>
- * @version 20130508
- * @package MyRadio_NIPSWeb
+ * Loads a NIPSWeb Auto playlist.
  */
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\NIPSWeb\NIPSWeb_AutoPlaylist;
 
- $playlistid = str_replace('auto-','',$_REQUEST['playlistid']);
+$playlistid = str_replace('auto-', '', $_REQUEST['playlistid']);
 
  $data = NIPSWeb_AutoPlaylist::getInstance($playlistid)->getTracks();
 
-require 'Views/MyRadio/datatojson.php';
+URLUtils::dataToJSON($data);

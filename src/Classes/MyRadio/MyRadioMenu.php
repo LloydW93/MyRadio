@@ -1,194 +1,173 @@
 <?php
 
 /**
- * This file provides the MyRadioMenu class for MyRadio
- * @package MyRadio_Core
+ * This file provides the MyRadioMenu class for MyRadio.
  */
+namespace MyRadio\MyRadio;
+
+use MyRadio\Config;
+use MyRadio\MyRadioException;
 
 /**
- * Abstractor for the MyRadio Menu
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20130930
- * @package MyRadio_Core
- * @uses \CacheProvider
- * @uses \Database
- * @uses \CoreUtils
+ * Abstractor for the MyRadio Menu.
+ *
+ * @uses    \CacheProvider
+ * @uses    \Database
+ * @uses    \AuthUtils
+ * @uses    \URLUtils
  */
-class MyRadioMenu {
-
+class MyRadioMenu
+{
     /**
-     * Returns a customised MyRadio menu for the *currently logged in* user
-     * @param \MyRadio_User $user The currently logged in User's User object
-     * @return Array A complex Menu array array array array array
+     * Returns a customised MyRadio menu for the *currently logged in* user.
+     *
+     * @return array A complex Menu array array array array array
      */
-    public function getMenuForUser(MyRadio_User $user) {
+    public function getMenuForUser()
+    {
         $full = $this->getFullMenu();
 
         //Iterate over the Full Menu, creating a user menu
-        $menu = array();
+        $menu = [];
         foreach ($full as $column) {
-            $newColumn = array('title' => $column['title'], 'sections' => array());
+            $newColumn = ['title' => $column['title'], 'sections' => []];
 
             foreach ($column['sections'] as $section) {
-                $items = array();
+                $items = [];
                 foreach ($section['items'] as $item) {
                     if ($this->userHasPermission($item)) {
                         $items[] = $item;
                     }
                 }
                 //Add this section (if it has anything in it)
-                if (!empty($items))
-                    $newColumn['sections'][] = array('title' => $section['title'], 'items' => $items);
+                if (!empty($items)) {
+                    $newColumn['sections'][] = ['title' => $section['title'], 'items' => $items];
+                }
             }
 
-            if (!empty($newColumn['sections']))
+            if (!empty($newColumn['sections'])) {
                 $menu[] = $newColumn;
+            }
         }
 
         return $menu;
     }
 
     /**
-     * Returns the entire MyRadio Main Menu structure
-     * @todo Better Documentation
+     * Returns the entire MyRadio Main Menu structure.
+     *
+     * @return array An array that can be used by getMenuForUser() to build the menu
      */
-    private function getFullMenu() {
-        $db = Database::getInstance();
-        //First, columns
-        $columns = $db->fetch_all('SELECT columnid, title FROM myury.menu_columns
-        ORDER BY position ASC');
-        //Now, sections
-        $sections = $db->fetch_all('SELECT sectionid, columnid, title FROM myury.menu_sections
-        ORDER BY position ASC');
-        //And finally, items
-        $items = array_merge(
-                $db->fetch_all('SELECT itemid, sectionid, title, url, description FROM myury.menu_links ORDER BY title ASC'), $db->fetch_all('SELECT sectionid, template FROM myury.menu_twigitems')
-        );
-        //Get permissions for each $item
-        foreach ($items as $key => $item) {
-            /**
-             * Secret: Some descriptions always reference the officer that *previously*
-             * held the position, not currently.
-             */
-            if (isset($items[$key]['description'])) {
-                if (strstr($items[$key]['description'], '#MACRO_SM-1') !== false) {
-                    $hist = MyRadio_Officer::getInstance(1)->getHistory();
-                    $n = 0;
-                    while (sizeof($hist) - 1 > $n && $hist[$n]['User']->getName() === $hist[0]['User']->getName()) {
-                        $n++;
-                    }
-                    $items[$key]['description'] = str_replace(['#MACRO_SM-1'], [$hist[$n]['User']->getName()], $items[$key]['description']);
-                }
-                if (strstr($items[$key]['description'], '#MACRO_PC-1') !== false) {
-                    $hist = MyRadio_Officer::getInstance(106)->getHistory();
-                    $n = 0;
-                    while (sizeof($hist) - 1 > $n && $hist[$n]['User']->getName() === $hist[0]['User']->getName()) {
-                        $n++;
-                    }
-                    $items[$key]['description'] = str_replace(['#MACRO_PC-1'], [$hist[$n]['User']->getName()], $items[$key]['description']);
-                }
-            }
+    private function getFullMenu()
+    {
+        $data = json_decode(@file_get_contents('Menus/menu.json', FILE_USE_INCLUDE_PATH), true);
 
-            if (!isset($item['itemid']))
-                continue; //Skip twigitems
-            $items[$key] = array_merge($items[$key], $this->breakDownURL($item['url']));
+        if (is_null($data)) {
+            throw new MyRadioException('Menu file not found', 500);
+        } else {
+            $columns = $data['columns'];
         }
 
-        //That'll do for now. Time to make the $menu
-        $menu = array();
-        foreach ($columns as $column) {
-            $newColumn = array('title' => $column['title'], 'sections' => array());
-
-            //Iterate over each section
-            foreach ($sections as $section) {
-                if ($section['columnid'] != $column['columnid'])
-                    continue;
-                //This section is for this column
-                $newItems = array();
-                //Iterate over each item
-                foreach ($items as $item) {
-                    if ($item['sectionid'] != $section['sectionid'])
-                        continue;
-                    //Item is for this section
-                    $newItems[] = $item;
+        foreach ($columns as $ckey => $column) {
+            foreach ($column['sections'] as $skey => $section) {
+                foreach ($section['items'] as $key => $item) {
+                    if (empty($item['template'])) {
+                        $columns[$ckey]['sections'][$skey]['items'][$key] = array_merge($section['items'][$key], $this->breakDownURL($item['url']));
+                    }
                 }
-                $newColumn['sections'][] = array('title' => $section['title'], 'items' => $newItems);
             }
-
-            $menu[] = $newColumn;
         }
-        return $menu;
+
+        return $columns;
     }
 
     /**
      * Gets all items for a module's submenu and puts them in an array.
-     * @param int $moduleid The id of the module to get items for
-     * @return Array An array that can be used by getSubMenuForUser() to build a submenu
-     * @todo Caching here breaks submenus
+     *
+     * @param string $module The name of the module to get items for
+     *
+     * @return array An array that can be used by getSubMenuForUser() to build a submenu
      */
-    private function getFullSubMenu($moduleid) {
-        $db = Database::getInstance();
+    private function getFullSubMenu($module)
+    {
+        $menu = json_decode(@file_get_contents('Menus/'.$module.'.json', FILE_USE_INCLUDE_PATH), true);
 
-        $items = $db->fetch_all('SELECT menumoduleid, title, url, description FROM myury.menu_module
-        WHERE moduleid=$1 ORDER BY title ASC', array($moduleid));
-        //Get permissions for each $item
-        foreach ($items as $key => $item) {
-            $items[$key] = array_merge($items[$key], $this->breakDownURL($item['url']));
+        if (is_null($menu)) {
+            $items = [];
+        } else {
+            $items = $menu['menu'];
+
+            //Get permissions for each $item
+            foreach ($items as $key => $item) {
+                $items[$key] = array_merge($items[$key], $this->breakDownURL($item['url']));
+            }
         }
+
         return $items;
     }
 
     /**
-     * Takes a $url database column entry, and breaks it into its components
-     * @param String $url A database-fetched menu item URL
-     * @return Array with four keys - 'url', 'module', 'action'. All are the String names, not IDs.
+     * Takes a $url database column entry, and breaks it into its components.
+     *
+     * @param string $url A database-fetched menu item URL
+     *
+     * @return array with four keys - 'url', 'module', 'action'. All are the String names, not IDs.
      */
-    private function breakDownURL($url) {
-        return array(
+    private function breakDownURL($url)
+    {
+        return [
             'url' => $this->parseURL($url),
             'module' => $this->parseURL($url, 'module'),
-            'action' => $this->parseURL($url, 'action')
-        );
+            'action' => $this->parseURL($url, 'action'),
+        ];
     }
 
     /**
-     * Check if user has permission to see this menu item
-     * @param Array $item A MyRadioMenu Menu Item to check permissions for. Should have been passed through
-     * breadDownURL() previously.
-     * @return boolean Whether the user can see this item
+     * Check if user has permission to see this menu item.
+     *
+     * @param array $item A MyRadioMenu Menu Item to check permissions for. Should have been passed through breadDownURL() previously.
+     *                    breadDownURL() previously.
+     *
+     * @return bool Whether the user can see this item
      */
-    private function userHasPermission($item) {
+    private function userHasPermission($item)
+    {
         return empty($item['action']) or
-                CoreUtils::requirePermissionAuto($item['module'], $item['action'], false);
+            AuthUtils::requirePermissionAuto($item['module'], $item['action'], false);
     }
 
     /**
      * @todo Document
-     * @param type $moduleid
-     * @param \MyRadio_User $user The currently logged in User's User object
+     *
+     * @param type $module
+     *
      * @return array
      */
-    public function getSubMenuForUser($moduleid, MyRadio_User $user) {
-        $full = $this->getFullSubMenu($moduleid);
+    public function getSubMenuForUser($module)
+    {
+        $full = $this->getFullSubMenu($module);
 
         //Iterate over the Full Menu, creating a user menu
-        $menu = array();
+        $menu = [];
         foreach ($full as $item) {
             if ($this->userHasPermission($item)) {
                 $menu[] = $item;
             }
         }
+
         return $menu;
     }
 
     /**
      * Detects module/action links and rewrites
-     * This is a method so it can easily be changed if Apache rewrites
-     * @param String $url The URL to parse
+     * This is a method so it can easily be changed if Apache rewrites.
+     *
+     * @param string $url The URL to parse
+     *
      * @todo Rewrite this to make sense
      */
-    private function parseURL($url, $return = 'url') {
+    private function parseURL($url, $return = 'url')
+    {
         $exp = explode(',', $url);
 
         $module = str_replace('module=', '', $exp[0], $count);
@@ -210,8 +189,9 @@ class MyRadioMenu {
             }
         } else {
             //It's not a rewritable
-            if ($return !== 'url')
-                return null;
+            if ($return !== 'url') {
+                return;
+            }
         }
         if ($return === 'module') {
             return $module;
@@ -223,9 +203,8 @@ class MyRadioMenu {
             }
         }
 
-        $url = $count === 1 ? CoreUtils::makeURL($module, $action, $params) : $url;
+        $url = $count === 1 ? URLUtils::makeURL($module, $action, $params) : $url;
+
         return $url;
     }
-
 }
-

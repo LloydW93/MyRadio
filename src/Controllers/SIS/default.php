@@ -1,21 +1,16 @@
 <?php
 /**
- * Main renderer for SIS
- * 
- * @author Andy Durant <aj@ury.org.uk>
- * @version 20130923
- * @package MyRadio_SIS
+ * Main renderer for SIS.
  */
+use \MyRadio\MyRadio\CoreUtils;
+use \MyRadio\SIS\SIS_Utils;
 
 CoreUtils::requireTimeslot();
 
-  $template = 'SIS/main.twig';
-  $title = 'SIS';
-  $plugins = SIS_Utils::getPlugins();
-  $tabs = SIS_Utils::getTabs();
+$template = 'SIS/main.twig';
+$title = 'SIS';
 
 CoreUtils::getTemplateObject()->setTemplate($template)
-        ->addVariable('title', $title)
-        ->addVariable('plugins', $plugins)
-        ->addVariable('tabs', $tabs)
-        ->render();
+    ->addVariable('title', $title)
+    ->addVariable('modules', SIS_Utils::getModulesForUser())
+    ->render();

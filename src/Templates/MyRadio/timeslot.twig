@@ -13,17 +13,24 @@
 {% if allTimeslots == 'on' %}
 <p>
     You are currently listing <strong>all</strong> shows.
-    <a href="{{myury.makeURL(config, 'MyRadio', 'timeslot', {next: next})}}">
+    <a href="{{MyRadio.makeURL(config, 'MyRadio', 'timeslot', {next: next})}}">
         Click here to only see your shows</a>.
 </p>
 {% elseif allTimeslots == 'off' %}
 <p>
     You are currently listing <strong>your</strong> shows.
-    <a href="{{myury.makeURL(config, 'MyRadio', 'timeslot', {next: next, all: true})}}">
+    <a href="{{MyRadio.makeURL(config, 'MyRadio', 'timeslot', {next: next, all: true})}}">
         Click here to see all shows</a>.
 </p>
 {% endif %}
-<form action='{{myury.makeURL(config,"MyRadio","timeslot")}}' method='post'>
+{% if allTimeslots != 'unavailable' and currentAvaliable %}
+<p>
+    <a href="{{MyRadio.makeURL(config, 'MyRadio', 'timeslot', {next: next, current: true})}}">
+        Click here to load the current show</a>.
+</p>
+{% endif %}
+
+<form action='{{MyRadio.makeURL(config,"MyRadio","timeslot")}}' method='post'>
     <fieldset class="timeslot">
         <select id="shows" size="20">
             {% for show in timeslots|keys %}
@@ -37,7 +44,7 @@
     <fieldset id="signin-list">
 
     </fieldset>
-    <input type="submit" id="signin-submit" value="Continue" class="ui-helper-hidden" />
+    <input type="submit" id="signin-submit" value="Continue" class="btn btn-primary hidden" />
 </form>
 {% endblock %}
 {% block foot %}
@@ -46,5 +53,6 @@
     window.showdata = {{timeslots|json_encode|raw}};
     window.memberid = {{memberid}};
 </script>
+<script type="text/javascript" src="{{baseurl}}js/vendor/moment.min.js"></script>
 <script type='text/javascript' src='{{baseurl}}js/myradio.timeslot.js'></script>
 {% endblock %}

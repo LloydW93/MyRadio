@@ -1,20 +1,20 @@
 <?php
 
 /**
- * Ajax handler for Timelord
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20130905
- * @package MyRadio_Timelord
+ * Ajax handler for Timelord.
  */
-$sel = new MyRadio_Selector();
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_Selector;
+use \MyRadio\ServiceAPI\MyRadio_Timeslot;
+use \MyRadio\MyRadio\MyRadioNews;
+
 $data = [
-    'selector' => $sel->query(),
+    'selector' => MyRadio_Selector::setQuery(),
     'shows' => MyRadio_Timeslot::getCurrentAndNext(null, 2),
     'breaking' => MyRadioNews::getLatestNewsItem(3),
     'ob' => MyRadio_Selector::remoteStreams(),
-    'silence' => $sel->isSilence(),
-    'obit' => $sel->isObitHappening()
+    'silence' => MyRadio_Selector::isSilence(),
+    'obit' => MyRadio_Selector::isObitHappening(),
 ];
 
-require 'Views/MyRadio/datatojson.php';
+URLUtils::dataToJSON($data);

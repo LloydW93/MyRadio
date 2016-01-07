@@ -1,35 +1,39 @@
 <?php
 /**
  * Allows the editing of quotes.
- * @version 20131020
- * @author Matt Windsor <matt.windsor@ury.org.uk>
- * @package MyURY_Quotes
  */
+use \MyRadio\MyRadio\CoreUtils;
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_Quote;
 
-$form = MyURY_JsonFormLoader::loadFromModule(
-  $module, 'quotefrm', 'doEditQuote',
-  []
-);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //Submitted
+    $data = MyRadio_Quote::getForm()->readValues();
 
-if ($_REQUEST['quote_id']) {
-  $quote = MyURY_ChartRelease::getInstance($_REQUEST['quote_id']);
+    if (empty($data['id'])) {
+        //create new
+        MyRadio_Quote::create($data);
+    } else {
+        //submit edit
+        MyRadio_Quote::getInstance($data['id'])
+            ->setSource($data['source'])
+            ->setText($data['text'])
+            ->setDate($data['date']);
+    }
 
-  $form->editMode(
-    $quote->getID(),
-    array_merge(
-      [
-        'date'   => CoreUtils::happyTime($quote->getDate(), false),
-        'source' => $quote->getSource(),
-        'text'   => $quote->getText()
-      ],
-      $chart_rows_form
-    )
-  );
-
+    URLUtils::backWithMessage('Quote Updated!');
 } else {
-  $form->setTitle('Create Quote');
-  $form->setFieldValue('date', CoreUtils::happyTime(time(), false));
-}
+    //Not Submitted
 
-$form->render();
-?>
+    if (isset($_REQUEST['quote_id'])) {
+        //edit form
+        $quote = MyRadio_Quote::getInstance($_REQUEST['quote_id']);
+
+        $quote->getEditForm()->render();
+    } else {
+        //create form
+        MyRadio_Quote::getForm()
+            ->setFieldValue('date', CoreUtils::happyTime(time(), false))
+            ->render();
+    }
+}

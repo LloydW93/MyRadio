@@ -1,8 +1,14 @@
 <?php
 /**
- * Provides the MyRadio_ChartRelease class for MyRadio
- * @package MyRadio_Charts
+ * Provides the MyRadio_ChartRelease class for MyRadio.
  */
+namespace MyRadio\ServiceAPI;
+
+use MyRadio\MyRadioException;
+use MyRadio\MyRadio\CoreUtils;
+use MyRadio\MyRadio\URLUtils;
+use MyRadio\MyRadio\MyRadioForm;
+use MyRadio\MyRadio\MyRadioFormField;
 
 /**
  * The ChartRelease class fetches information about chart releases.
@@ -10,12 +16,10 @@
  * A chart release is a chart for a given week, and is associated with a chart
  * and an arbitrary number of rows (traditionally 10).
  *
- * @version 20140113
- * @author  Matt Windsor <matt.windsor@ury.org.uk>
- * @package MyRadio_Charts
  * @uses    \Database
  */
-class MyRadio_ChartRelease extends ServiceAPI {
+class MyRadio_ChartRelease extends ServiceAPI
+{
     const GET_INSTANCE_SQL = '
         SELECT
             *
@@ -53,6 +57,8 @@ class MyRadio_ChartRelease extends ServiceAPI {
             music.chart_release(chart_type_id, submitted)
         VALUES
             ($1, $2)
+        RETURNING
+            chart_release_id
         ;';
 
     const SET_RELEASE_TIME_SQL = '
@@ -73,40 +79,45 @@ class MyRadio_ChartRelease extends ServiceAPI {
             chart_release_id = $2
         ;';
 
-
     /**
-     * The singleton store for ChartRelease objects
+     * The singleton store for ChartRelease objects.
+     *
      * @var MyRadio_ChartRelease[]
      */
     private static $chart_releases = [];
 
     /**
      * The chart type this chart release was released under.
+     *
      * @var MyRadio_ChartType
      */
     private $chart_type;
 
     /**
      * The numeric ID of the chart type.
-     * @var Int
+     *
+     * @var int
      */
     private $chart_type_id;
 
     /**
      * The numeric ID of the chart release.
-     * @var Int
+     *
+     * @var int
      */
     private $chart_release_id;
 
     /**
      * The UNIX timestamp, if any, on which this chart release was released.
-     * @var Int
+     *
+     * @var int
      */
     private $release_time;
 
     /**
      * The list of IDs of MyRadio_ChartRows for this chart release.
-     * @var Int[]
+     *
+     * @var int[]
      */
     private $chart_row_ids;
 
@@ -118,25 +129,27 @@ class MyRadio_ChartRelease extends ServiceAPI {
      * @param $chart_release_id  The numeric ID of the chart release.
      * @param $chart_type        The parent chart type, if any.
      *
-     * @return The chart type with the given ID.
+     * @return The chart release with the given ID.
      */
-    protected function __construct($chart_release_id, $chart_type=null) {
-        $this->chart_release_id = $chart_release_id;
+    protected function __construct($chart_release_id, $chart_type = null)
+    {
+        $this->chart_release_id = (int) $chart_release_id;
         $this->chart_type = $chart_type;
 
-        $chart_release_data = self::$db->fetch_one(
+        $chart_release_data = self::$db->fetchOne(
             self::GET_INSTANCE_SQL,
             [$chart_release_id]
         );
         if (empty($chart_release_data)) {
             throw new MyRadioException('The specified Chart Release does not seem to exist.');
+
             return;
         }
 
         $this->release_time = strtotime($chart_release_data['submitted']);
         $this->chart_type_id = $chart_release_data['chart_type_id'];
 
-        $this->chart_row_ids = self::$db->fetch_column(
+        $this->chart_row_ids = self::$db->fetchColumn(
             self::GET_CHART_ROWS_SQL,
             [$chart_release_id]
         );
@@ -150,7 +163,8 @@ class MyRadio_ChartRelease extends ServiceAPI {
      *
      * @return The chart release with the given ID.
      */
-    public static function getInstance($chart_release_id=-1, $chart_type=null) {
+    public static function getInstance($chart_release_id = -1, $chart_type = null)
+    {
         self::__wakeup();
 
         if (!is_numeric($chart_release_id)) {
@@ -166,6 +180,7 @@ class MyRadio_ChartRelease extends ServiceAPI {
                 $chart_type
             );
         }
+
         return self::$chart_releases[$chart_release_id];
     }
 
@@ -175,150 +190,275 @@ class MyRadio_ChartRelease extends ServiceAPI {
      *
      * This is mainly useful for finding a newly created chart type's ID.
      *
-     * @param int $release_time   The release time, as a UNIX timestamp.
-     * @param int $chart_type_id  The ID of the chart type to search in.
-     * @return int  The first chart released on the given time for
-     *              the given type.
+     * @param int $release_time  The release time, as a UNIX timestamp.
+     * @param int $chart_type_id The ID of the chart type to search in.
+     *
+     * @return int The first chart released on the given time for
+     *             the given type.
      */
-    public function findReleaseIDOn($release_time, $chart_type_id) {
+    public function findReleaseIDOn($release_time, $chart_type_id)
+    {
         return array_pop(
-            self::$db->fetch_column(
+            self::$db->fetchColumn(
                 self::FIND_RELEASE_ID_ON_SQL,
                 [
                     $chart_type_id,
-                    date('c', $release_time)
+                    date('c', $release_time),
                 ]
             )
         );
     }
- 
+
     /**
      * Retrieves the time of release of this chart release.
      *
-     * @return int  the submission time as a UNIX timestamp.
+     * @return int the submission time as a UNIX timestamp.
      */
-    public function getReleaseTime() {
+    public function getReleaseTime()
+    {
         return $this->release_time;
     }
 
     /**
      * Retrieves the unique ID of this chart release.
      *
-     * @return int  The chart release ID.
+     * @return int The chart release ID.
      */
-    public function getID() {
+    public function getID()
+    {
         return $this->chart_release_id;
     }
 
     /**
      * Retrieves the unique ID of this chart release's type.
      *
-     * @return int  The chart type ID.
+     * @return int The chart type ID.
      */
-    public function getChartTypeID() {
+    public function getChartTypeID()
+    {
         return $this->chart_type_id;
     }
 
     /**
      * Retrieves the type this chart release falls under.
      *
-     * @return MyRadio_ChartType  The chart type object.
+     * @return MyRadio_ChartType The chart type object.
      */
-    public function getChartType() {
+    public function getChartType()
+    {
         if ($this->chart_type === null) {
             $this->chart_type = MyRadio_ChartType::getInstance($this->chart_type_id);
         }
+
         return $this->chart_type;
     }
 
     /**
      * Retrieves the rows that make up this chart release.
      *
-     * @return array  The chart rows.
+     * @return array The chart rows.
      */
-    public function getChartRows() {
+    public function getChartRows()
+    {
         $chart_rows = [];
         foreach ($this->chart_row_ids as $chart_row_id) {
             $chart_rows[] = MyRadio_ChartRow::getInstance($chart_row_id, $this);
         }
+
         return $chart_rows;
+    }
+
+    /**
+     * Sets the chart rows that make up this chart release.
+     *
+     * @param $chart_rows array  An array of trackids in position order.
+     *
+     * @return none.
+     */
+    public function setChartRows($chart_rows)
+    {
+        $old_rows = $this->getChartRows();
+        if (empty($old_rows)) {
+            foreach ($chart_rows as $i => $row) {
+                MyRadio_ChartRow::create(
+                    [
+                          'chart_release_id' => $this->getID(),
+                          'position' => $i + 1,
+                          'trackid' => $row,
+                    ]
+                );
+            }
+        } else {
+            foreach ($chart_rows as $i => $row) {
+                if ($old_rows[$i]->getTrackID() !== $row) {
+                    $old_rows[$i]->setTrackID($row);
+                }
+            }
+        }
     }
 
     /**
      * Creates a new chart release in the database.
      *
-     * @param $data array  An array of data to populate the row with.
+     * @param  $data array  An array of data to populate the row with.
      *                     Must contain 'chart_type_id' and 'submitted_time'.
-     * @return null  nothing.
+     *
+     * @return The chart release with the given ID.
      */
-    public static function create($data) {
-        self::$db->query(
+    public static function create($data)
+    {
+        $r = self::$db->fetchColumn(
             self::INSERT_SQL,
             [
-                intval($data['chart_type_id']),    
-                date('%c', intval($data['submitted_time'])) // Expecting UNIX timestamp
+                intval($data['chart_type_id']),
+                date('%c', intval($data['submitted_time'])), // Expecting UNIX timestamp
             ],
             true
         );
+
+        return self::getInstance($r[0]);
     }
 
     /**
      * Sets this chart release's release time.
      *
-     * @param int $release_time  The new time, as a UNIX timestamp.
+     * @param int $release_time The new time, as a UNIX timestamp.
      *
-     * @return MyRadio_ChartRelease  This object, for method chaining.
+     * @return MyRadio_ChartRelease This object, for method chaining.
      */
-    public function setReleaseTime($release_time) {
+    public function setReleaseTime($release_time)
+    {
         $this->release_time = strtotime($release_time);
-        return $this->set_db(SET_RELEASE_TIME_SQL, date('c', $release_time));
+
+        return $this->setDB(self::SET_RELEASE_TIME_SQL, date('c', $release_time));
     }
 
     /**
      * Sets this chart release's type ID.
      *
-     * @param int $chart_type_id  The new ID.
+     * @param int $chart_type_id The new ID.
      *
      * @return MyRadio_ChartRelease This object, for method chaining.
      */
-    public function setChartTypeID($chart_type_id) {
+    public function setChartTypeID($chart_type_id)
+    {
         $this->chart_type_id = intval($chart_type_id);
-        return $this->set_db(SET_CHART_TYPE_ID_SQL, intval($chart_type_id));
+
+        return $this->setDB(self::SET_CHART_TYPE_ID_SQL, intval($chart_type_id));
     }
 
     /**
      * Sets a property on the database representation of this chart release.
      *
-     * @param string $sql  The SQL to use for setting this property.
+     * @param string $sql The SQL to use for setting this property.
      * @param $value  The value of the property to set on this chart release.
      *
-     * @return MyRadio_ChartRelease  This object, for method chaining.
+     * @return MyRadio_ChartRelease This object, for method chaining.
      */
-    private function set_db($sql, $value) {
+    private function setDB($sql, $value)
+    {
         self::$db->query($sql, [$value, $this->getID()]);
+
         return $this;
+    }
+
+    public static function getForm()
+    {
+        $types = MyRadio_ChartType::getAll();
+        $type_select = [['text' => 'Please select...', 'disabled' => true]];
+        foreach ($types as $type) {
+            $type_select[] = [
+                'value' => $type->getID(),
+                'text' => $type->getDescription(),
+            ];
+        }
+
+        $form = (
+            new MyRadioForm(
+                'charts_editchartrelease',
+                'Charts',
+                'editChartRelease',
+                ['title' => 'Create Chart Release']
+            )
+        )->addField(
+            new MyRadioFormField(
+                'chart_type_id',
+                MyRadioFormField::TYPE_SELECT,
+                [
+                    'label' => 'Chart Type',
+                    'explanation' => 'The type of chart.',
+                    'options' => $type_select,
+                ]
+            )
+        )->addField(
+            new MyRadioFormField(
+                'submitted_time',
+                MyRadioFormField::TYPE_DATE,
+                [
+                    'label' => 'Release Date',
+                    'explanation' => 'The date on which the chart is released.',
+                ]
+            )
+        )->addField(
+            new MyRadioFormField(
+                'tracks',
+                MyRadioFormField::TYPE_TABULARSET,
+                array(
+                    'options' => array(
+                        new MyRadioFormField(
+                            'track',
+                            MyRadioFormField::TYPE_TRACK,
+                            [
+                                'label' => 'Tracks',
+                            ]
+                        ),
+                    ),
+                )
+            )
+        );
+
+        return $form;
+    }
+
+    public function getEditForm()
+    {
+        return self::getForm()
+            ->setTitle('Edit Chart Release')
+            ->editMode(
+                $this->getID(),
+                [
+                    'chart_type_id' => $this->getChartTypeID(),
+                    'submitted_time' => CoreUtils::happyTime($this->getReleaseTime(), false),
+                    'tracks.track' => array_map(
+                        function ($chartRow) {
+                            return $chartRow->getTrack();
+                        },
+                        $this->getChartRows()
+                    ),
+                ]
+            );
     }
 
     /**
      * Converts this chart release to a table data source.
      *
-     * @return array    The object as a data source.
+     * @return array The object as a data source.
      */
-    public function toDataSource() {
+    public function toDataSource()
+    {
         return [
             'type' => $this->getChartType()->getDescription(),
             'date' => strftime('%c', $this->getReleaseTime()),
             'editlink' => [
                 'display' => 'icon',
-                'value' => 'script',
+                'value' => 'pencil',
                 'title' => 'Edit Chart Release',
-                'url' => CoreUtils::makeURL(
+                'url' => URLUtils::makeURL(
                     'Charts',
                     'editChartRelease',
                     ['chart_release_id' => $this->getID()]
-                )
+                ),
             ],
         ];
     }
 }
-?>

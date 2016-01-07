@@ -1,14 +1,18 @@
 <?php
 
 /**
- * Sets the user's prefered Authenticator
- * @author Lloyd Wallis
+ * Sets the user's prefered Authenticator.
+ *
  * @data 20140102
- * @package MyRadio_Core
  */
+use \MyRadio\Config;
+use \MyRadio\MyRadioException;
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\MyRadio\MyRadioDefaultAuthenticator;
+use \MyRadio\ServiceAPI\MyRadio_User;
 
 if (!isset($_REQUEST['authenticator'])) {
-    header('Location: '.CoreUtils::makeURL('MyRadio','login'));
+    URLUtils::redirect('MyRadio', 'login');
     exit;
 }
 
@@ -19,9 +23,10 @@ if (!in_array($_REQUEST['authenticator'], Config::$authenticators)) {
 //Set the authenticator
 MyRadio_User::getInstance()->setAuthProvider($_REQUEST['authenticator']);
 
-//If it's not the Default authenticator, delete the password
-if ($_REQUEST['authenticator'] !== 'MyRadioDefaultAuthenticator') {
+//If it's not the Default authenticator, delete the password and make require password change false
+if ($_REQUEST['authenticator'] !== '\MyRadio\MyRadio\MyRadioDefaultAuthenticator') {
     (new MyRadioDefaultAuthenticator())->removePassword($_SESSION['memberid']);
+    MyRadio_User::getInstance()->setRequirePasswordChange(false);
 }
 
 //Remove the lock on Session access

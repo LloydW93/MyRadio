@@ -1,17 +1,20 @@
 <?php
 /**
- * List all trainers
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20131014
- * @package MyRadio_Profile
+ * List all trainers.
  */
+use \MyRadio\MyRadio\CoreUtils;
+use \MyRadio\ServiceAPI\MyRadio_TrainingStatus;
 
-$officers = CoreUtils::dataSourceParser(
-        MyRadio_TrainingStatus::getInstance(3)->getAwardedTo());
+$trainers = CoreUtils::dataSourceParser(
+    MyRadio_TrainingStatus::getInstance(3)->getAwardedTo()
+);
+
+foreach ($trainers as $key => $value) {
+    $trainers[$key]['awarded_time'] = date('Y/m/d', $trainers[$key]['awarded_time']);
+}
 
 CoreUtils::getTemplateObject()->setTemplate('table.twig')
-        ->addVariable('tablescript', 'myury.datatable.default')
-        ->addVariable('title', 'Trainers List')
-        ->addVariable('tabledata', $officers)
-        ->render();
+    ->addVariable('tablescript', 'myradio.profile.listTrainers')
+    ->addVariable('title', 'Trainers List')
+    ->addVariable('tabledata', $trainers)
+    ->render();

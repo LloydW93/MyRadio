@@ -27,7 +27,7 @@
         {% endif %}
       </td>
     </tr>
-    {% if user.collegeid != 10 %}
+    {% if user.college is defined %}
       <tr>
         <td><b>College:</b></td>
         <td>{{user.college}}</td>
@@ -51,7 +51,7 @@
     {% endif %}
     <tr>
       <td><b>Emails Go To:</b></td>
-      <td><a href="mailto:{{user.email}}">{{user.email}}</a></td>
+      <td><a href="mailto:{{user.email ?: user.public_email}}">{{user.email ?: user.public_email}}</a></td>
     </tr>
     {% if user.local_alias != '' %}
       <tr>
@@ -77,11 +77,11 @@
       </td>
     </tr>
     {% endif %}
-    {% if user.account_locked is defined %}
+    {% if user.locked is defined %}
     <tr>
       <td><b>Account Locked:</b></td>
       <td>
-        {% if user.account_locked %}
+        {% if user.locked %}
           Yes
         {% else %}
           No
@@ -117,8 +117,8 @@
           <li>No Payment Data Available</li>
         {% endfor %}
         </ul>
-        {% if canmarkpayments %}
-        <form type="post" action="{{myury.makeURL(config, 'Profile', 'markPaid')}}">
+        {% if (can_mark_payments and not user.is_currently_paid) %}
+        <form type="post" action="{{MyRadio.makeURL(config, 'Profile', 'markPaid')}}">
           <input type="hidden" name="memberid" value="{{user.memberid}}">
           <input type="submit" value="Mark Paid">
         </form>
@@ -156,14 +156,14 @@
         <ul id="training">
         {% for train in user.training %}
           <li>{{train.title}} on {{train.awarded_time|date("j/n/Y")}}
-            <em>by <a href="{{train.awarded_by.url}}">{{train.awarded_by.fname}} {{train.awarded_by.sname}}</a></em>
+            <em>by <a href="{{train.awarded_by.url}}">{{train.awarded_by.value}}</a></em>
           </li>
         {% else %}
           <li>No Training Data Available</li>
         {% endfor %}
         </ul>
         {% if user.training_avail %}
-        <form action="{{myury.makeURL(config, 'Profile', 'addTrainingStatus')}}"
+        <form action="{{MyRadio.makeURL(config, 'Profile', 'addTrainingStatus')}}"
               method="POST">
         <select name="status_id" id="status_id">
           {% for train in user.training_avail %}

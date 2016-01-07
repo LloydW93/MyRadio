@@ -1,57 +1,46 @@
 <?php
 /**
  * Allows the editing of chart releases.
- * @version 20140113
- * @author  Matt Windsor <matt.windsor@ury.org.uk>
- * @package MyRadio_Charts
  */
+use \MyRadio\MyRadio\CoreUtils;
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_ChartRelease;
 
-$types = MyRadio_ChartType::getAll();
-$type_select = [['text' => 'Please select...', 'disabled' => true]];
-foreach ($types as $type) {
-  $type_select[] = [
-    'value' => $type->getID(),
-    'text' => $type->getDescription()
-  ];
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //Submitted
+    $data = MyRadio_ChartRelease::getForm()->readValues();
 
-$form = MyRadio_JsonFormLoader::loadFromModule(
-  $module, 'editChartRelease', 'doEditChartRelease',
-  ['chart_types' => $type_select]
-);
+    if (empty($data['id'])) {
+        //create new
+        $chart_release = MyRadio_ChartRelease::create($data);
+    } else {
+        //submit edit
+        $chart_release = MyRadio_ChartRelease::getInstance($data['id']);
+        $chart_release
+            ->setChartTypeID($data['chart_type_id'])
+            ->setReleaseTime($data['submitted_time']);
+    }
 
-if (empty($_REQUEST['chart_release_id'])) {
-  $_REQUEST['chart_release_id'] = null;
-}
+    foreach ($data['tracks']['track'] as $track) {
+        if (is_object($track)) {
+            $tracks[] = $track->getID();
+        }
+    }
 
-if ($_REQUEST['chart_release_id']) {
-  $chart_release = MyRadio_ChartRelease::getInstance($_REQUEST['chart_release_id']);
+    $chart_release->setChartRows($tracks);
 
-  // Temporary hack until tabular stuff appears.
-  $chart_rows = $chart_release->getChartRows();
-  $chart_rows_form = [];
-  for ($i = 0; $i < 10; $i++) {
-    $row = $chart_rows[$i]; 
-    $chart_rows_form['track' . ($i + 1)] = $row->getTrack();
-  }
-
-  $form->editMode(
-    $chart_release->getID(),
-    array_merge(
-      [
-        'submitted_time' =>
-          CoreUtils::happyTime($chart_release->getReleaseTime(), false),
-        'chart_type_id' =>
-          $chart_release->getChartTypeID()
-      ],
-      $chart_rows_form
-    )
-  );
-
+    URLUtils::backWithMessage('Chart Release Updated.');
 } else {
-  $form->setTitle('Create Chart Release');
-  $form->setFieldValue('submitted_time', CoreUtils::happyTime(time(), false));
+    //Not Submitted
+    if (isset($_REQUEST['chart_release_id'])) {
+        //edit form
+        MyRadio_ChartRelease::getInstance($_REQUEST['chart_release_id'])
+            ->getEditForm()
+            ->render();
+    } else {
+        //create form
+        MyRadio_ChartRelease::getForm()
+            ->setFieldValue('submitted_time', CoreUtils::happyTime(time(), false))
+            ->render();
+    }
 }
-
-$form->render();
-?>

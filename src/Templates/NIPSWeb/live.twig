@@ -1,7 +1,7 @@
 {% extends 'base.twig' %}
 {% block head %}
 {{ parent() }}
-<link rel="stylesheet" type="text/css" href="{{shiburl}}css/planner.css" />
+<link rel="stylesheet" type="text/css" href="{{baseurl}}css/planner.css" />
 <style type="text/css">
     .ui-contextmenu {z-index: 10000}
 </style>
@@ -23,7 +23,7 @@
             <p>Connecting to server...</p>
             <div id="init-progressbar"></div>
         </div>
-        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-hidden" id="init-overlay-fallback">
+        <div class="ui-dialog-buttonpane ui-widget-content hidden" id="init-overlay-fallback">
             <div class="ui-dialog-buttonset">
                 <button type="button">Fallback Mode</button>
             </div>
@@ -31,7 +31,7 @@
     </div>
 </div>
 <header id="content-header">
-    <!--<h3 id="a-manage-library"><a href="{{myury.makeURL(config,'NIPSWeb','manage_library')}}" title="Library Manager">Manage Library</a></h3>-->
+    <!--<h3 id="a-manage-library"><a href="{{MyRadio.makeURL(config,'NIPSWeb','manage_library')}}" title="Library Manager">Manage Library</a></h3>-->
     <h2>{{title}}</h2>
 </header>
 <div id="grid" class="transBG clearfix">
@@ -49,11 +49,11 @@
             <div id="resource-add-container" class="box width-2 height-2 ui-widget ui-widget-content">
                 <div id="resource-add-header" class="ui-widget-header">
           {% include 'NIPSWeb/res_selector.twig' %}
-                    <span id="res-loading" class="ui-state-highlight ui-helper-hidden">Loading...</span>
+                    <span id="res-loading" class="ui-state-highlight hidden">Loading...</span>
                     <br>
-                    <input type="text" placeholder="Filter by artist..." id="res-filter-artist" class="ui-widget-content ui-helper-hidden" />
-                    <input type="text" placeholder="Filter by track..." id="res-filter-track" class="ui-widget-content ui-helper-hidden" />
-                    <input type="text" placeholder="Filter by name..." id="res-filter-name" class="ui-widget-content ui-helper-hidden" />
+                    <input type="text" placeholder="Filter by artist..." id="res-filter-artist" class="ui-widget-content hidden" />
+                    <input type="text" placeholder="Filter by track..." id="res-filter-track" class="ui-widget-content hidden" />
+                    <input type="text" placeholder="Filter by name..." id="res-filter-name" class="ui-widget-content hidden" />
                 </div>
                 <ul class="box baps-channel ui-widget-content" id="baps-channel-res" channel="res">
                 </ul>
@@ -71,7 +71,7 @@
                 <button class='pause' id='ch{{channel}}-pause' onclick='NIPSWeb.pause("{{channel}}")'></button>
                 <button class='stop' id='ch{{channel}}-stop' class='ui-state-disabled' onclick='NIPSWeb.stop("{{channel}}")'></button><br>
                 <div id='progress-bar-{{channel}}' class="channel-position-slider"></div>
-                <label id='ch{{channel}}-elapsed'>--:--</label> / 
+                <label id='ch{{channel}}-elapsed'>--:--</label> /
                 <label id='ch{{channel}}-duration'>--:--</label>
                 {% endif %}
             </div>
@@ -79,15 +79,15 @@
         </div>
     </div>
 
-    <div id="footer-tips" class="ui-state-highlight ui-helper-hidden"></div>
+    <div id="footer-tips" class="ui-state-highlight hidden"></div>
 
 </div>
-<div id="notice" class="ui-state-highlight ui-helper-hidden">Running in Fallback Mode. <a href="javascript:">What's this?</a></div>
+<div id="notice" class="ui-state-highlight hidden">Running in Fallback Mode. <a href="javascript:">What's this?</a></div>
 {% endblock %}
 
 {% block foot %}
 {{ parent() }}
-<script type="text/javascript" src="{{baseurl}}js/jquery.ui-contextmenu.min.js"></script>
+<script type="text/javascript" src="{{baseurl}}js/vendor/jquery.ui-contextmenu.min.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/ul-sort.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/nipsweb.live.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/nipsweb.librarypane.js"></script>

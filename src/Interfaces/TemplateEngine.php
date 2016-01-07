@@ -1,14 +1,14 @@
 <?php
+
+namespace MyRadio\Iface;
+
 /**
  * A standard Interface for the Template Engine Abstractors
- * Allows drop-in replacement of template systems
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 21072012
- * @package MyRadio_Core
+ * Allows drop-in replacement of template systems.
  */
-interface TemplateEngine extends Singleton {
-  public function addVariable($name, $value);
-  public function setTemplate($template);
-  public function render();
+interface TemplateEngine extends Singleton
+{
+    public function addVariable($name, $value);
+    public function setTemplate($template);
+    public function render();
 }

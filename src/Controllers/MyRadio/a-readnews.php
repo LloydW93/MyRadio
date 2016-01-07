@@ -1,13 +1,13 @@
 <?php
 /**
  * This is pretty much what every Controller should look like.
- * Some might include more than one model etc.... 
- * 
+ * Some might include more than one model etc....
+ *
  * @todo proper documentation
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20130718
- * @package MyRadio_Core
  */
-MyRadioNews::markNewsAsRead((int)$_REQUEST['newsentryid'], MyRadio_User::getInstance());
-require 'Views/MyRadio/nocontent.php';
+use \MyRadio\MyRadio\MyRadioNews;
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_User;
+
+MyRadioNews::markNewsAsRead((int) $_REQUEST['newsentryid'], MyRadio_User::getInstance());
+URLUtils::nocontent();

@@ -2,25 +2,30 @@
 
 /**
  * Provides basic login requirement functionality to other PHP web systems,
- * backwards compatible with the old Shibbobleh system URY use to use
+ * backwards compatible with the old Shibbobleh system URY use to use.
  */
 //Load the basic MyRadio framework
-require_once __DIR__ . '/cli_common.php';
+
+use \MyRadio\MyRadio\URLUtils;
+
+require_once __DIR__.'/root_cli.php';
 
 //Check the current authentication status of the user
-if ((!isset($_SESSION['memberid']) or $_SESSION['auth_use_locked']) &&
-        (!defined('SHIBBOBLEH_ALLOW_READONLY') or SHIBBOBLEH_ALLOW_READONLY === false)) {
+if ((!isset($_SESSION['memberid']) or $_SESSION['auth_use_locked'])
+    && (!defined('SHIBBOBLEH_ALLOW_READONLY') or SHIBBOBLEH_ALLOW_READONLY === false)
+) {
     //Authentication is required.
     header('HTTP/1.1 403 Forbidden');
-    header('Location: ' . CoreUtils::makeURL('MyRadio', 'login', ['next' => $_SERVER['REQUEST_URI']]));
+    URLUtils::redirect('MyRadio', 'login', ['next' => $_SERVER['REQUEST_URI']]);
     exit;
 }
 
 //Check if the current app needs a timeslot selected
-if ((!isset($_SESSION['timeslotid']) or $_SESSION['timeslotid'] === null) &&
-        (defined('SHIBBOBLEH_REQUIRE_TIMESLOT') and SHIBBOBLEH_REQUIRE_TIMESLOT)) {
+if ((!isset($_SESSION['timeslotid']) or $_SESSION['timeslotid'] === null)
+    && (defined('SHIBBOBLEH_REQUIRE_TIMESLOT') and SHIBBOBLEH_REQUIRE_TIMESLOT)
+) {
     //Timeslot needs configuring
     header('HTTP/1.1 403 Forbidden');
-    header('Location: ' . CoreUtils::makeURL('MyRadio', 'timeslot', ['next' => $_SERVER['REQUEST_URI']]));
+    URLUtils::redirect('MyRadio', 'timeslot', ['next' => $_SERVER['REQUEST_URI']]);
     exit;
 }

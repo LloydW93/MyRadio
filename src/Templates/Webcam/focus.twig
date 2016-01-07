@@ -2,19 +2,31 @@
 
 {% block stripecontent %}
 <figure class="webcam-focus-stream-container" id="webcam-stream-{{live.streamid}}">
-      <img src="{{live.liveurl}}" class="webcam-stream" />
+      <img id="webcam-focus-live" src="{{live.liveurl}}" class="webcam-stream" />
       <figcaption>{{live.streamname}}</figcaption>
+      <script>
+        var img = document.getElementById('webcam-focus-live');
+        setInterval(function (image, source) {
+            image.setAttribute('src', source + '?_=' + Date.now());
+        }, 1000, img, '{{live.liveurl}}');
+      </script>
     </figure>
 <div class="webcam-focus-grid-container">
   {% for stream in streams %}
     <figure class="webcam-stream-container" id="webcam-stream-{{stream.streamid}}">
-      <img src="{{stream.liveurl}}" class="webcam-stream" />
+      <img id="{{stream.streamname}}" src="{{stream.liveurl}}" class="webcam-stream" />
       <figcaption>{{stream.streamname}}</figcaption>
+      <script>
+        var img = document.getElementById('{{stream.streamname}}');
+        setInterval(function (image, source) {
+            image.setAttribute('src', source + '?_=' + Date.now());
+        }, 1000, img, '{{stream.liveurl}}');
+      </script>
     </figure>
   {% endfor %}
 </div>
-<div class="ui-state-highlight" id="webcam-time-counter">
-  <span class="ui-icon ui-icon-clock fleft"></span>You've been watching the webcams for <span id="webcam-time-counter-value">not very long</span>
+<div class="alert alert-info" id="webcam-time-counter">
+  <span class="glyphicon glyphicon-time"></span> You've been watching the webcams for <span id="webcam-time-counter-value">not very long</span>
 </div>
 {% endblock %}
 

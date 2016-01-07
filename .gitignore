@@ -1,5 +1,14 @@
-/nbproject
 *.LCK*
-MyRadio_Config.local.php
+MyRadio_Config.local.php*
+util/checkpassword.conf
 *.sw[a-z]
 sftp-*.json
+.sync-config.cson
+.tags*
+Thumbs.db
+cache.properties
+build/
+.phpintel
+.vagrant
+src/vendor
+composer.lock

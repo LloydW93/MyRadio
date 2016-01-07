@@ -1,11 +1,12 @@
 <?php
 /**
- * Provides a JS file with configuration options useful to the client
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20130525
- * @package MyRadio_Core
+ * Provides a JS file with configuration options useful to the client.
  */
+use \MyRadio\Config;
 
-$conf = Config::getPublicConfig();
-require 'Views/MyRadio/config.js.php';
+header('Content-Type: text/javascript');
+header('Cache-Control: max-age=86400, must-revalidate');
+header('Expires: ', date('r', time() + 86400));
+header('HTTP/1.1 200 OK');
+
+echo 'window.mConfig='.json_encode(Config::getPublicConfig()).';';

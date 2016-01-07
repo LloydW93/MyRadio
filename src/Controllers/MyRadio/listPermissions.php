@@ -1,25 +1,30 @@
 <?php
 /**
- * List all of the possible permissions available for MyRadio
- * 
- * @author Lloyd Wallis
- * @data 20140107
- * @package MyRadio_Core
+ * List all of the possible permissions available for MyRadio.
+ *
+ * @data    20140107
  */
+use \MyRadio\MyRadio\AuthUtils;
+use \MyRadio\MyRadio\CoreUtils;
+use \MyRadio\MyRadio\URLUtils;
 
-$data = array_map(function($x) {
-    $x['usage'] = [
+$data = array_map(
+    function ($x) {
+        $x['usage'] = [
         'display' => 'text',
         'value' => 'Usage',
-        'url' => CoreUtils::makeURL('MyRadio', 'permissionUsage', ['typeid' => $x['value']])
-    ];
-    $x['assigned'] = [
+        'url' => URLUtils::makeURL('MyRadio', 'permissionUsage', ['typeid' => $x['value']]),
+        ];
+        $x['assigned'] = [
         'display' => 'text',
         'value' => 'Assigned To',
-        'url' => CoreUtils::makeURL('MyRadio', 'permissionAssigned', ['typeid' => $x['value']])
-    ];
-    return $x;
-}, CoreUtils::getAllPermissions());
+        'url' => URLUtils::makeURL('MyRadio', 'permissionAssigned', ['typeid' => $x['value']]),
+        ];
+
+        return $x;
+    },
+    AuthUtils::getAllPermissions()
+);
 
 CoreUtils::getTemplateObject()->setTemplate('MyRadio/listPermissions.twig')
         ->addVariable('title', 'Available Permissions')

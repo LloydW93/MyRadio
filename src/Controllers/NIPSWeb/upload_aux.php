@@ -1,11 +1,10 @@
 <?php
 /**
- * Uploads a ManagedItem
- * 
- * @author Andy Durant <aj@ury.org.uk>
- * @version 20130509
- * @package MyRadio_NIPSWeb
+ * Uploads a ManagedItem.
  */
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\NIPSWeb\NIPSWeb_ManagedItem;
+
 $data = NIPSWeb_ManagedItem::cacheItem($_FILES['audio']['tmp_name']);
 
-require 'Views/MyRadio/datatojson.php';
+URLUtils::dataToJSON($data);

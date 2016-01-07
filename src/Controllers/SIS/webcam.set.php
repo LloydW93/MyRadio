@@ -1,14 +1,12 @@
 <?php
 /**
- * Webcam Setter for SIS
- * 
- * @author Andy Durant <aj@ury.org.uk>
- * @version 20131101
- * @package MyRadio_SIS
+ * Webcam Setter for SIS.
  */
+use \MyRadio\ServiceAPI\MyRadio_Webcam;
 
-if (!isset($_REQUEST['src']))
-  return;
+if (!isset($_REQUEST['src'])) {
+    return;
+}
 
 MyRadio_Webcam::setWebcam($_REQUEST['src']);
 

@@ -1,8 +1,8 @@
 {% extends 'stripe.twig' %}
 {% block stripecontent %}
-<div class="ui-widget">
-  <div class="ui-widget-header">Please read these tips first!</div>
-  <div class="ui-widget-content">
+<div class="panel panel-default">
+  <div class="panel-heading">Please read these tips first!</div>
+  <div class="panel-body">
     <ul>
       <li>The proposals are generated automatically by our servers by analysing the MP3 files.</li>
       <li>Accepting a proposal replace the existing data (on the left) with the proposed data (on the right).</li>
@@ -28,13 +28,13 @@
       <th>Reliability</th><th>{% if correction.state == 1 %}Recommended{% else %}Unsure{% endif %}</th>
     </tr>
     <tr>
-      <td>Track</td><td><audio id="trackcorrect_fpreview" src="#" controls>You need HTML5, silly!</audio></td>
+      <td>Track</td><td><audio id="trackcorrect_fpreview" src="{{ MyRadio.makeURL(config, 'NIPSWeb', 'secure_play', {'trackid': correction.trackid, 'recordid': correction.album.recordid}) }}" controls>You need HTML5, silly!</audio></td>
     </tr>
     <tr>
-      <td colspan="3"><a href="{{correction.confirmlink.url}}">Approve</a> | 
-      <a href="{{correction.confirmlink.url}}&ignorealbum=true">Approve (Ignoring Album)</a> | 
-      <a href="{{correction.rejectlink.url}}">Reject</a> | 
-      <a href="{{correction.rejectlink.url}}&permanent=true">Reject and Confirm Current Metadata</a> | 
+      <td colspan="3"><a href="{{correction.confirmlink.url}}">Approve</a> |
+      <a href="{{correction.confirmlink.url}}&ignorealbum=true">Approve (Ignoring Album)</a> |
+      <a href="{{correction.rejectlink.url}}">Reject</a> |
+      <a href="{{correction.rejectlink.url}}&permanent=true">Reject and Confirm Current Metadata</a> |
       <a href="{{correction.editlink.url}}">Edit Manually</a></td>
     </tr>
   </tbody>
@@ -44,5 +44,4 @@
 
 {% block foot %}
 {{ parent() }}
-<script type="text/javascript" src="{{baseurl}}js/myury.library.viewtrackcorrection.js"></script>
 {% endblock %}

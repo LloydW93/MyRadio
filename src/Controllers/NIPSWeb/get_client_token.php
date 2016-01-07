@@ -1,11 +1,10 @@
 <?php
 /**
- * Creates a NIPSWeb Edit Token for the current session
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 20130608
- * @package MyRadio_NIPSWeb
+ * Creates a NIPSWeb Edit Token for the current session.
  */
-$data = array('token' => NIPSWeb_Token::getEditToken());
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\NIPSWeb\NIPSWeb_Token;
 
-require 'Views/MyRadio/datatojson.php';
+$data = ['token' => NIPSWeb_Token::getEditToken()];
+
+URLUtils::dataToJSON($data);

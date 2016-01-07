@@ -1,11 +1,9 @@
 <?php
 /**
- * Allows URY Trainers to create demo slots for new members to attend
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 24102012
- * @package MyRadio_Scheduler
+ * Allows URY Trainers to create demo slots for new members to attend.
  */
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_Demo;
 
 $result = MyRadio_Demo::attend($_REQUEST['demoid']);
-header('Location: '.CoreUtils::makeURL($module, 'listDemos', array('msg'=>$result)));
+URLUtils::redirect($module, 'listDemos', ['msg' => $result]);

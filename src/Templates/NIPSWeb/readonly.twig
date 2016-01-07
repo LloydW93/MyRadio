@@ -5,7 +5,7 @@ Edit features are disabled.
 {% extends 'base.twig' %}
 {% block head %}
 {{ parent() }}
-<link rel="stylesheet" type="text/css" href="{{shiburl}}css/planner.css" />
+<link rel="stylesheet" type="text/css" href="{{baseurl}}css/planner.css" />
 <style type="text/css">
 .ui-contextmenu {z-index: 10000}
 .box.width-1 {width: calc(33% - 10px)}
@@ -31,9 +31,9 @@ Edit features are disabled.
           {% endfor %}
         </ul>
       {% endfor %}
-    
+
     </div>
-    
+
     <div id="baps-channelaction-container"  class="clearfix">
       {% set channels = {1: 'News', 2: 'Speech', 3: 'Music'} %}
       {% for channel in channels|keys %}
@@ -44,15 +44,15 @@ Edit features are disabled.
           <button class='pause' id='ch{{channel}}-pause' onclick='previewPause({{channel}})'></button>
           <button class='stop' id='ch{{channel}}-stop' class='ui-state-disabled' onclick='previewStop({{channel}})'></button><br>
           <div id='progress-bar-{{channel}}'></div>
-          <label id='ch{{channel}}-elapsed'>--:--</label> / 
+          <label id='ch{{channel}}-elapsed'>--:--</label> /
           <label id='ch{{channel}}-duration'>--:--</label>
         </div>
       {% endfor %}
     </div>
-    
+
   </div>
-  
-  <div id="footer-tips" class="ui-state-highlight ui-helper-hidden"></div>
+
+  <div id="footer-tips" class="ui-state-highlight hidden"></div>
 
 </div>
 
@@ -63,7 +63,7 @@ Edit features are disabled.
 
 {% block foot %}
 {{ parent() }}
-<script type="text/javascript" src="{{baseurl}}js/jquery.ui-contextmenu.min.js"></script>
+<script type="text/javascript" src="{{baseurl}}js/vendor/jquery.ui-contextmenu.min.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/ul-sort.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/nipsweb.player.js"></script>
 <script type="text/javascript" src="{{baseurl}}js/nipsweb.init.js"></script>

@@ -1,12 +1,18 @@
 <?php
 /**
- * Saves a cached upload into the URY Central Database
- * 
- * @author Lloyd Wallis <lpw@ury.org.uk>
- * @version 18042013
- * @package MyRadio_NIPSWeb
+ * Saves a cached upload into the URY Central Database.
  */
-$data = MyRadio_Track::identifyAndStoreTrack($_REQUEST['fileid'], $_REQUEST['title'], $_REQUEST['artist']);
+use \MyRadio\MyRadio\URLUtils;
+use \MyRadio\ServiceAPI\MyRadio_Track;
+
+$data = MyRadio_Track::identifyAndStoreTrack(
+    $_REQUEST['fileid'],
+    $_REQUEST['title'],
+    $_REQUEST['artist'],
+    $_REQUEST['album'],
+    $_REQUEST['position'],
+    isset($_REQUEST['explicit']) ? true : null
+);
 $data['fileid'] = $_REQUEST['fileid'];
 
-require 'Views/MyRadio/datatojson.php';
+URLUtils::dataToJSON($data);
