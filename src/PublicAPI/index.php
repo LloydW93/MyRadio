@@ -10,7 +10,7 @@ $__start = -microtime(true);
  * @todo Management interfaces to configure keys and expose methods
  */
 // Configure MyRadio & Set API Settings
-define('SILENT_EXCEPTIONS', true);
+define('SILENT_EXCEPTIONS', false);
 define('DISABLE_SESSION', true);
 define('JSON_DEBUG', true);
 
