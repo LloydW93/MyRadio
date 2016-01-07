@@ -16,6 +16,9 @@ define('JSON_DEBUG', true);
 
 require_once __DIR__.'/../Controllers/root_cli.php';
 
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+
 /**
  * Handle API errors.
  */
